@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Scanners</h1>
+<div class="grid-two">
+  <div class="card">
+    <h3>XSS Scanner</h3>
+    <p>Reflected XSS tests using payloads.</p>
+    <button class="run-scanner" data-scanner="xss">Run XSS</button>
+  </div>
+  <div class="card">
+    <h3>DOM XSS</h3>
+    <p>Heuristic checks for DOM sinks.</p>
+    <button class="run-scanner" data-scanner="domxss">Run DOM XSS</button>
+  </div>
+  <div class="card">
+    <h3>SQL Injection</h3>
+    <p>Error-based SQLi checks.</p>
+    <button class="run-scanner" data-scanner="sqli">Run SQLi</button>
+  </div>
+  <div class="card">
+    <h3>Time-based SQLi</h3>
+    <p>Delays and timing-based heuristics.</p>
+    <button class="run-scanner" data-scanner="sqli_time">Run Time SQLi</button>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.run-scanner').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const scanner = btn.getAttribute('data-scanner');
+    const url = prompt('Enter target URL (including https://)');
+    if(!url) return;
+    fetch('/api/scan', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({url, scanners:[scanner]})})
+    .then(r=>r.json()).then(d=>alert('Started: '+d.id)).catch(e=>alert('Error: '+e));
+  });
+});
+</script>
+{% endblock %}

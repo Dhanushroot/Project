@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Report</h2>
+{% if data %}
+  <div class="card">
+    <strong>URL:</strong> {{ data.url }}<br/>
+    <strong>Sections:</strong> {{ data.results.keys()|list|length }}
+  </div>
+  <div class="card">
+    <button id="pdf-btn">Generate PDF</button>
+    <a href="/reports/{{ request.path.split('/')[-1] }}.json" style="margin-left:12px">Download JSON</a>
+  </div>
+  <pre>{{ data|tojson(indent=2) }}</pre>
+{% else %}
+  <div class="card">Report not found</div>
+{% endif %}
+
+<script>
+document.getElementById('pdf-btn')?.addEventListener('click', async ()=>{
+  const id = '{{ request.path.split('/')[-1] }}';
+  const res = await fetch('/api/generate_pdf/'+id);
+  if(res.ok){
+    const js = await res.json();
+    window.open(js.pdf, '_blank');
+  } else alert('Failed to generate PDF');
+});
+</script>
+{% endblock %}

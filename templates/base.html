@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Improved Scanner - Dashboard</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">⚡ Improved Scanner</div>
+      <nav class="menu">
+        <a href="/" class="menu-item">Dashboard</a>
+        <a href="/scanners" class="menu-item">Scanners</a>
+        <a href="/reports" class="menu-item">Reports</a>
+        <a href="/live" class="menu-item">Live Feed</a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="/login">Login</a>
+        <button id="theme-toggle" class="theme-btn">Theme</button>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left"> <a href="/">Home</a> </div>
+        <div class="topbar-right"> <span id="user-info">Guest</span> </div>
+      </header>
+      <section class="content">
+        {% block content %}{% endblock %}
+      </section>
+    </main>
+  </div>
+
+<script>
+// Theme toggle (professional)
+const btn = document.getElementById('theme-toggle');
+if(btn){
+  btn.addEventListener('click', ()=>{
+    const cur = document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', cur === 'dark' ? '' : 'dark');
+    localStorage.setItem('theme', document.documentElement.getAttribute('data-theme'));
+  });
+  const stored = localStorage.getItem('theme');
+  if(stored) document.documentElement.setAttribute('data-theme', stored);
+}
+</script>
+</body>
+</html>

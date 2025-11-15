@@ -1,0 +1,6 @@
+{
+  "timeout": 5,
+  "threads": 5,
+  "report_format": "json",
+  "API_KEY": "supersecretapikey"
+}

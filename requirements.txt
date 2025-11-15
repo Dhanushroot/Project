@@ -1,0 +1,12 @@
+Flask
+requests
+beautifulsoup4
+lxml
+Flask-Login
+Flask-WTF
+WTForms
+reportlab
+python-dotenv
+werkzeug
+
+html5lib

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Reports</h1>
+<div id="reports-list" class="reports-list"></div>
+
+<script>
+async function loadReports(){
+  const res = await fetch('/reports_list');
+  if(!res.ok) return;
+  const js = await res.json();
+  const el = document.getElementById('reports-list');
+  el.innerHTML='';
+  js.forEach(r=>{
+    const card = document.createElement('div');
+    card.className='card report-card';
+    card.innerHTML = `<h4>Report: ${r.id}</h4><div>URL: ${r.url}</div><div><a href="/report/${r.id}">View</a> | <a href="/reports/${r.file}">Download JSON</a></div>`;
+    el.appendChild(card);
+  });
+}
+loadReports();
+</script>
+{% endblock %}

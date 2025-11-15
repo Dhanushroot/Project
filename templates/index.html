@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="grid">
+  <div class="card">
+    <h2>Quick Scan</h2>
+    <form id="scan-form">
+      <label>Target URL</label>
+      <input id="url" name="url" placeholder="https://example.com" />
+      <label>Depth (crawler)</label>
+      <input id="depth" name="depth" value="0" type="number" min="0" max="3" />
+      <div class="checkboxes">
+        <label><input type="checkbox" name="scanners" value="xss" checked /> XSS</label>
+        <label><input type="checkbox" name="scanners" value="domxss" checked /> DOM XSS</label>
+        <label><input type="checkbox" name="scanners" value="sqli" checked /> SQLi</label>
+        <label><input type="checkbox" name="scanners" value="sqli_time" checked /> Time-based SQLi</label>
+        <label><input type="checkbox" name="scanners" value="headers" checked /> Headers</label>
+        <label><input type="checkbox" name="scanners" value="csrf" checked /> CSRF</label>
+        <label><input type="checkbox" name="scanners" value="redirect" checked /> Redirect</label>
+      </div>
+      <div class="actions">
+        <button type="button" id="scan-btn">Scan</button>
+        <button type="button" id="scan-all-btn">Scan All</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card" style="flex:1 1 60%">
+    <h2>Live Terminal</h2>
+    <div id="terminal" class="terminal"></div>
+    <div class="terminal-controls">
+      <button id="clear-log">Clear</button>
+      <button id="download-log">Download</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const terminal = document.getElementById('terminal');
+const scanBtn = document.getElementById('scan-btn');
+const scanAllBtn = document.getElementById('scan-all-btn');
+const clearBtn = document.getElementById('clear-log');
+const downloadBtn = document.getElementById('download-log');
+
+function pushLine(text, status='info'){
+  const el = document.createElement('div');
+  el.className = 'term-line ' + status;
+  el.textContent = text;
+  terminal.appendChild(el);
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+clearBtn.addEventListener('click', ()=> terminal.innerHTML='');
+downloadBtn.addEventListener('click', ()=>{
+  const blob = new Blob([terminal.innerText], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='scan_log.txt'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+// track last printed log index per scan id to avoid duplicates
+const lastIndex = {};
+
+async function startScan(payload){
+  pushLine('Starting scan request...', 'info');
+  const res = await fetch('/api/scan', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  if(!res.ok){
+    const txt = await res.text();
+    pushLine('Error starting scan: '+txt, 'error');
+    return;
+  }
+  const data = await res.json();
+  const id = data.id;
+  pushLine('Scan started. ID: '+id, 'success');
+  lastIndex[id] = 0; // initialize
+
+  // poll status
+  let finished=false;
+  while(!finished){
+    await new Promise(r=>setTimeout(r,1000));
+    const s = await fetch('/api/scan_status/'+id);
+    if(!s.ok) break;
+    const js = await s.json();
+    // append only NEW logs
+    if(js.logs && js.logs.length){
+      const start = lastIndex[id] || 0;
+      const newLogs = js.logs.slice(start);
+      newLogs.forEach(l => {
+        pushLine(l.msg, l.status);
+      });
+      lastIndex[id] = js.logs.length;
+    }
+    if(js.status === 'done'){
+      pushLine('Scan complete. Report ID: '+js.report_id, 'success');
+      finished=true;
+    } else if(js.status === 'error'){
+      pushLine('Scan error: '+(js.error||'unknown'), 'error');
+      finished=true;
+    }
+  }
+}
+
+scanBtn.addEventListener('click', ()=>{
+  const url = document.getElementById('url').value;
+  const depth = document.getElementById('depth').value || 0;
+  const checks = Array.from(document.querySelectorAll('input[name="scanners"]:checked')).map(n=>n.value);
+  if(!url){ alert('Enter URL'); return; }
+  startScan({url, depth, scanners:checks});
+});
+
+scanAllBtn.addEventListener('click', ()=>{
+  const url = document.getElementById('url').value;
+  const depth = document.getElementById('depth').value || 0;
+  if(!url){ alert('Enter URL'); return; }
+  startScan({url, depth, scanners:['all']});
+});
+</script>
+
+{% endblock %}

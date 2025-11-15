@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Live Feed</h1>
+<div id="feed" class="terminal"></div>
+<script>
+async function pollFeed(){
+  const res = await fetch('/live_feed');
+  if(!res.ok) return;
+  const js = await res.json();
+  const el = document.getElementById('feed');
+  el.innerHTML='';
+  js.forEach(l=>{
+    const d=document.createElement('div');
+    d.className='term-line '+l.status;
+    d.textContent = `[${l.id}] ${l.msg}`;
+    el.appendChild(d);
+  });
+}
+setInterval(pollFeed, 2000);
+pollFeed();
+</script>
+{% endblock %}
