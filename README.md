@@ -1,6 +1,6 @@
 # Web Application Vulnerability Scanner  
 ### *Elevate Lab – Cybersecurity Internship Project*  
-**Author:** __________________________  
+**Author:** DHANUSH S
 
 ---
 
